@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: access-pass
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATA_DIR
+        value: /app/data
+      - key: DATABASE_URL
+        fromDatabase:
+          name: access-pass-db
+          property: connectionString
+      - key: PYTHONUNBUFFERED
+        value: 1
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: SUPER_ADMIN_PASSWORD
+        generateValue: true
+databases:
+  - name: access-pass-db
+    databaseName: access_pass
+    user: access_pass_user
+    plan: free
