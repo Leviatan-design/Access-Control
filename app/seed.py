@@ -1,4 +1,3 @@
-import random
 import os
 import secrets
 import string
@@ -30,10 +29,10 @@ def ensure_super_admin(db: Session) -> None:
 
 
 def generate_code(db: Session) -> str:
-    """Genera un código único para pases."""
+    """Genera un código único para pases usando criptografía segura."""
     while True:
-        letters = "".join(random.choices(string.ascii_uppercase, k=3))
-        digits = "".join(random.choices(string.digits, k=3))
+        letters = "".join(secrets.choice(string.ascii_uppercase) for _ in range(3))
+        digits = "".join(secrets.choice(string.digits) for _ in range(3))
         code = f"{letters}-{digits}"
         exists = db.query(Pase).filter(Pase.codigo == code).first()
         if not exists:
@@ -77,13 +76,14 @@ def seed_database(db: Session) -> None:
     db.flush()
 
     # Crear usuarios (ADMIN_CASA para cada propiedad)
+    demo_password = os.environ.get("DEMO_PASSWORD", secrets.token_urlsafe(16))
     usuarios = [
         Usuario(
             propiedad_id=propiedades[0].id,
             nombre="María González",
             email="maria.gonzalez@example.com",
             cedula="V-12345678",
-            password_hash=hash_password("Demo-FlowLogic-2026!"),
+            password_hash=hash_password(demo_password),
             rol="ADMIN_CASA",
         ),
         Usuario(
@@ -91,7 +91,7 @@ def seed_database(db: Session) -> None:
             nombre="Carlos Ruiz",
             email="carlos.ruiz@example.com",
             cedula="V-87654321",
-            password_hash=hash_password("Demo-FlowLogic-2026!"),
+            password_hash=hash_password(demo_password),
             rol="ADMIN_CASA",
         ),
         Usuario(
@@ -99,7 +99,7 @@ def seed_database(db: Session) -> None:
             nombre="Ana Martínez",
             email="ana.martinez@example.com",
             cedula="V-99887766",
-            password_hash=hash_password("Demo-FlowLogic-2026!"),
+            password_hash=hash_password(demo_password),
             rol="ADMIN_CASA",
         ),
     ]
@@ -113,7 +113,7 @@ def seed_database(db: Session) -> None:
             nombre="Juan González",
             email="juan.gonzalez@example.com",
             cedula="V-12345679",
-            password_hash=hash_password("Demo-FlowLogic-2026!"),
+            password_hash=hash_password(demo_password),
             rol="COHABITANTE",
         ),
         Usuario(
@@ -121,7 +121,7 @@ def seed_database(db: Session) -> None:
             nombre="Laura Ruiz",
             email="laura.ruiz@example.com",
             cedula="V-87654322",
-            password_hash=hash_password("Demo-FlowLogic-2026!"),
+            password_hash=hash_password(demo_password),
             rol="COHABITANTE",
         ),
     ]

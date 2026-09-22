@@ -1,77 +1,44 @@
-# Control de Acceso Residencial — MVP Demo
+# Control de Acceso Residencial
 
-Aplicación web full-stack para gestionar visitas en conjuntos residenciales. Incluye panel de propietario (agendar visitas y generar pases con QR) y panel de garita (búsqueda, escaneo QR, entradas/salidas).
+Sistema de control de acceso residencial full-stack para gestionar visitas en conjuntos residenciales. Incluye panel de propietario (agendar visitas y generar pases con QR) y panel de garita (búsqueda, escaneo QR, entradas/salidas).
 
-## Stack
+## Stack Tecnológico
 
 - **Backend:** Python 3.12 + FastAPI + Uvicorn
 - **Frontend:** Jinja2 + TailwindCSS (CDN) + JavaScript nativo
-- **Base de datos:** PostgreSQL con datos semilla automáticos
+- **Base de datos:** PostgreSQL + SQLAlchemy 2.0.36 + Alembic
 - **Autenticación:** JWT Bearer + bcrypt + roles jerárquicos
-- **Contenedor:** Docker (imagen slim)
+- **Infraestructura:** Docker + docker-compose + Render.com
 
-## Funcionalidades
+## Roles de Usuario
 
-| Módulo | Descripción |
-|--------|-------------|
-| Inicio | Selector rápido de rol (Propietario / Vigilante) sin contraseñas |
-| Propietario | Formulario de visita, código de 6 caracteres (ej. `ACC-902`), QR dinámico, lista de visitas |
-| Garita | Búsqueda por código, escáner QR por cámara, listas en vivo, botones de entrada/salida |
+- `SUPER_ADMIN`: Administrador general del sistema
+- `ADMIN_CONDOMINIO`: Administrador de condominio
+- `ADMIN_CASA`: Administrador de propiedad
+- `COHABITANTE`: Habitante de la propiedad
+- `VIGILANTE`: Personal de seguridad
 
-### Datos de prueba (seed)
+## Modelos de Datos
 
-Al iniciar la aplicación se crean automáticamente:
+- **Condominio**: Información del conjunto residencial
+- **Propiedad**: Unidades habitacionales con estado de solvencia
+- **Usuario**: Usuarios con roles jerárquicos
+- **Pase**: Pases de acceso para visitantes
+- **InvitacionVivienda**: Sistema de invitaciones para cohabitantes
+- **Anuncio**: Clasificados internos del condominio
 
-- 3 propiedades residenciales
-- 4 visitas esperadas para hoy
-- 2 visitas en estado "Dentro del conjunto"
-
-## Ejecución local con Docker
-
-### Requisitos
-
-- Docker Desktop (o Docker Engine + Docker Compose)
-
-### Pasos
-
-```bash
-# 1. Construir la imagen
-docker build -t access-control .
-
-# 2. Ejecutar el contenedor
-docker run --rm -p 8080:8080 -e PORT=8080 access-control
-```
-
-Abre en el navegador: **http://localhost:8080**
-
-### Accesos iniciales
-
-El seeder crea de forma idempotente el siguiente acceso `SUPER_ADMIN`:
-
-| Email | Contraseña | Rol |
-|--------|------------|-----|
-| `dev@flowlogic.com` | `ChangeThis-FlowLogic-2026!` | `SUPER_ADMIN` |
-
-Configura `SUPER_ADMIN_EMAIL`, `SUPER_ADMIN_PASSWORD` y `JWT_SECRET_KEY` como secretos reales antes de cualquier despliegue. El login usa `POST /auth/login` con formulario OAuth2 (`username` = email, `password` = contraseña).
-
-### Verificar salud
-
-```bash
-curl http://localhost:8080/health
-```
-
-Respuesta esperada: `{"status":"ok","service":"access-control"}`
-
-## Ejecución local sin Docker
-
-### Requisitos
+## Requisitos
 
 - Python 3.12+
+- PostgreSQL 12+
+- Docker Desktop (opcional)
 
-### Pasos
+## Instalación Local
+
+### 1. Clonar el repositorio y configurar entorno
 
 ```bash
-# Crear entorno virtual (opcional pero recomendado)
+# Crear entorno virtual
 python -m venv venv
 
 # Windows
@@ -82,92 +49,183 @@ source venv/bin/activate
 
 # Instalar dependencias
 pip install -r requirements.txt
+```
 
-# Ejecutar servidor
+### 2. Configurar variables de entorno
+
+```bash
+# Copiar archivo de ejemplo
+cp .env.example .env
+
+# Editar .env con tus configuraciones
+# DATABASE_URL, JWT_SECRET_KEY, etc.
+```
+
+### 3. Ejecutar migraciones
+
+```bash
+# Ejecutar migraciones de base de datos
+alembic upgrade head
+
+# Sembrar datos de prueba
+python -c "from app.seed import seed_database; from app.database import SessionLocal; seed_database(SessionLocal())"
+```
+
+### 4. Iniciar servidor
+
+```bash
+# Windows
 set PORT=8080
+uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+
+# Linux / macOS
+export PORT=8080
 uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
 ```
 
-En Linux/macOS usa `export PORT=8080` en lugar de `set PORT=8080`.
+Abre en el navegador: **http://localhost:8080**
 
-## Despliegue en Render.com (plan gratuito)
+## Ejecución con Docker
 
-### Opción A: Blueprint (render.yaml)
+### Docker Compose (recomendado para desarrollo)
 
-1. Sube este repositorio a GitHub, GitLab o Bitbucket.
-2. En [Render Dashboard](https://dashboard.render.com), haz clic en **New → Blueprint**.
-3. Conecta el repositorio. Render detectará `render.yaml` automáticamente.
-4. Confirma el despliegue. Render construirá la imagen Docker y publicará el servicio.
+```bash
+# Iniciar servicios
+docker-compose up -d
 
-### Opción B: Web Service manual
+# Ver logs
+docker-compose logs -f
 
-1. **New → Web Service** en Render.
-2. Conecta tu repositorio.
-3. Configura:
-   - **Runtime:** Docker
-   - **Plan:** Free
-   - **Health Check Path:** `/health`
-4. Variables de entorno:
-   - `JWT_SECRET_KEY` — secreto largo y aleatorio para firmar los tokens JWT.
-   - `SUPER_ADMIN_PASSWORD` — contraseña inicial del usuario administrador.
-   - `SUPER_ADMIN_EMAIL` — opcional; por defecto `dev@flowlogic.com`.
-   - `DATA_DIR` = `/app/data`
-   - `PORT` — Render la inyecta automáticamente; no es necesario definirla manualmente.
-5. Haz clic en **Create Web Service**.
+# Detener servicios
+docker-compose down
+```
 
-### Notas para Render Free Tier
+### Docker Build Manual
 
-- La base de datos se mantiene en PostgreSQL; el almacenamiento local del contenedor es efímero.
-- El servicio entra en **sleep** tras inactividad (~15 min). La primera petición puede tardar unos segundos.
-- El escaneo QR requiere **HTTPS** (Render lo provee) y permiso de cámara en el navegador.
+```bash
+# Construir imagen
+docker build -t access-control .
 
-## Estructura del proyecto
+# Ejecutar contenedor
+docker run --rm -p 8080:8080 -e PORT=8080 access-control
+```
+
+## Variables de Entorno
+
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | URL de conexión PostgreSQL | - |
+| `JWT_SECRET_KEY` | Secreto para firmar tokens JWT | - |
+| `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | Tiempo de expiración token (min) | 60 |
+| `SUPER_ADMIN_EMAIL` | Email del super admin | `dev@flowlogic.com` |
+| `SUPER_ADMIN_PASSWORD` | Contraseña del super admin | - |
+| `DATA_DIR` | Directorio de datos | `./data` |
+| `PORT` | Puerto del servidor | `8080` |
+
+## Usuario de Prueba
+
+El sistema crea automáticamente un usuario SUPER_ADMIN:
+
+| Email | Contraseña | Rol |
+|--------|------------|-----|
+| `dev@flowlogic.com` | `ChangeThis-FlowLogic-2026!` | `SUPER_ADMIN` |
+
+⚠️ **Importante:** Cambia estas credenciales en producción.
+
+## Estructura del Proyecto
 
 ```
 .
 ├── app/
-│   ├── main.py           # Rutas FastAPI y API REST
-│   ├── database.py       # Configuración PostgreSQL
-│   ├── models.py         # Modelos Property y Visit
-│   ├── seed.py           # Datos de prueba
-│   ├── static/           # Archivos estáticos
-│   └── templates/        # Plantillas Jinja2
-│       ├── base.html
-│       ├── index.html
-│       ├── owner.html
-│       └── guard.html
-├── Dockerfile
-├── render.yaml
-├── requirements.txt
-└── README.md
+│   ├── main.py              # Aplicación FastAPI principal
+│   ├── database.py          # Configuración PostgreSQL
+│   ├── models.py            # Modelos SQLAlchemy
+│   ├── seed.py              # Datos de prueba
+│   ├── controller.py        # Lógica de negocio
+│   ├── security.py          # Autenticación y autorización
+│   ├── schemas.py           # Pydantic schemas
+│   ├── static/              # Archivos estáticos
+│   ├── templates/           # Plantillas Jinja2
+│   └── routes/              # API routers organizados
+├── alembic/                 # Migraciones de base de datos
+├── docs/                    # Documentación técnica
+├── scripts/                 # Scripts utilitarios
+├── Dockerfile               # Configuración Docker
+├── docker-compose.yml       # Orquestación local
+├── render.yaml              # Configuración Render.com
+├── requirements.txt         # Dependencias Python
+└── README.md                # Este archivo
 ```
 
-## API REST
+## Documentación
 
-| Método | Ruta | Descripción |
-|--------|------|-------------|
-| GET | `/health` | Health check |
-| GET | `/api/visits/today` | Visitas esperadas hoy |
-| GET | `/api/visits/inside` | Visitantes dentro |
-| GET | `/api/visits/search?code=ACC-902` | Buscar por código |
-| POST | `/api/visits/{id}/entry` | Registrar entrada |
-| POST | `/api/visits/{id}/exit` | Registrar salida |
+- **[Mapa del Sitio](docs/site-map.md)** - Estructura de navegación y endpoints API
+- **[OpenAPI Schema](docs/openapi.json)** - Especificación completa de la API
+- **Health Check:** `GET /health` → `{"status":"ok","service":"access-control"}`
 
-## Códigos de prueba
+## API REST Principales
 
-Puedes probar en el panel de garita con estos códigos precargados:
+### Autenticación
+- `POST /auth/login` - Login con credenciales
+- `POST /auth/register/cohabitante` - Registro con token de invitación
 
-| Código | Visitante | Estado |
-|--------|-----------|--------|
-| ACC-902 | Pedro López | Agendada |
-| VIS-415 | Laura Sánchez | Agendada |
-| ENT-733 | Roberto Díaz | Agendada |
-| PAS-128 | Sofía Herrera | Agendada |
-| ING-556 | Miguel Torres | Dentro |
-| AUT-789 | Diana Vega | Dentro |
+### Pases
+- `GET /api/pases/today` - Visitas esperadas hoy
+- `GET /api/pases/inside` - Visitantes dentro del conjunto
+- `GET /api/pases/search?code=XXX` - Buscar por código
+- `POST /api/pases/{id}/entry` - Registrar entrada
+- `POST /api/pases/{id}/exit` - Registrar salida
+
+### API v1
+- `/api/v1/pases/*` - Gestión completa de pases
+- `/api/v1/usuarios/*` - Gestión de usuarios y habitantes
+- `/api/v1/condominio/*` - Gestión de condominios y morosidad
+- `/api/v1/propiedades/*` - Gestión de propiedades
+- `/api/v1/anuncios/*` - Clasificados internos
+
+## Despliegue en Render.com
+
+El proyecto incluye configuración para despliegue automático en Render.com:
+
+1. Sube el repositorio a GitHub
+2. En Render Dashboard: **New → Blueprint**
+3. Conecta el repositorio (detecta `render.yaml` automáticamente)
+4. Confirma el despliegue
+
+Render configurará automáticamente:
+- Base de datos PostgreSQL
+- Variables de entorno generadas
+- Health checks
+- HTTPS automático
+
+## Estado Actual
+
+### Funcionalidades Implementadas
+- ✅ Sistema de autenticación JWT con roles jerárquicos
+- ✅ Panel de propietario con gestión de visitas
+- ✅ Panel de garita con escaneo QR
+- ✅ Generación de códigos únicos para pases
+- ✅ Validación de solvencia financiera
+- ✅ Sistema de invitaciones para cohabitantes
+- ✅ Límite de 4 habitantes por propiedad
+- ✅ Anuncios clasificados
+- ✅ API REST completa
+- ✅ Sincronización offline para garita
+- ✅ Migraciones Alembic
+- ✅ Dockerización completa
+
+### Próximos Pasos
+- 🔄 Migración a framework frontend moderno (React/Vue)
+- 🔄 Suite de pruebas unitarias y de integración
+- 🔄 Pipeline CI/CD
+- 🔄 Monitoreo y logging estructurado
+- 🔄 Optimización de base de datos
+- 🔄 Documentación API completa (Swagger)
 
 ## Licencia
 
-Proyecto demo — uso libre para pruebas y demostraciones.
-# MVP-Access-Control
-# Access-Control
+Proyecto demo para uso en pruebas y demostraciones.
+
+---
+
+**Documentación técnica:** [docs/site-map.md](docs/site-map.md) | [docs/openapi.json](docs/openapi.json)

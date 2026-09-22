@@ -1,0 +1,1931 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Access Pass - FlowLogic",
+    "version": "2.0.0"
+  },
+  "paths": {
+    "/api/v1/usuarios/crear": {
+      "post": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Crear Usuario",
+        "description": "Crea un nuevo usuario con el rol especificado.\nSolo permite roles válidos: SUPER_ADMIN, ADMIN_CASA, COHABITANTE, VIGILANTE.",
+        "operationId": "crear_usuario_api_v1_usuarios_crear_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/usuarios/vivienda/generar-invitacion": {
+      "post": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Generar Invitacion",
+        "operationId": "generar_invitacion_api_v1_usuarios_vivienda_generar_invitacion_post",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitacionResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/usuarios/vivienda/habitante/{usuario_id}": {
+      "delete": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Eliminar Habitante",
+        "operationId": "eliminar_habitante_api_v1_usuarios_vivienda_habitante__usuario_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usuarios/vivienda/{propiedad_id}/habitantes": {
+      "get": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Obtener Habitantes Por Propiedad",
+        "description": "Obtiene todos los habitantes (ADMIN_CASA + COHABITANTE) de una propiedad.",
+        "operationId": "obtener_habitantes_por_propiedad_api_v1_usuarios_vivienda__propiedad_id__habitantes_get",
+        "parameters": [
+          {
+            "name": "propiedad_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Propiedad Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioResponse"
+                  },
+                  "title": "Response Obtener Habitantes Por Propiedad Api V1 Usuarios Vivienda  Propiedad Id  Habitantes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usuarios/vivienda/{propiedad_id}/conteo": {
+      "get": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Contar Habitantes",
+        "description": "Obtiene el conteo actual de habitantes en una propiedad.",
+        "operationId": "contar_habitantes_api_v1_usuarios_vivienda__propiedad_id__conteo_get",
+        "parameters": [
+          {
+            "name": "propiedad_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Propiedad Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usuarios/{usuario_id}": {
+      "get": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Obtener Usuario",
+        "description": "Obtiene un usuario por su ID.",
+        "operationId": "obtener_usuario_api_v1_usuarios__usuario_id__get",
+        "parameters": [
+          {
+            "name": "usuario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/usuarios/cedula/{cedula}": {
+      "get": {
+        "tags": [
+          "usuarios"
+        ],
+        "summary": "Obtener Usuario Por Cedula",
+        "description": "Obtiene un usuario por su cédula.",
+        "operationId": "obtener_usuario_por_cedula_api_v1_usuarios_cedula__cedula__get",
+        "parameters": [
+          {
+            "name": "cedula",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cedula"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/crear": {
+      "post": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Crear Pase",
+        "description": "Crea un nuevo pase para un visitante.\n\nValidaciones:\n- La propiedad debe existir\n- El usuario creador debe existir\n- La propiedad debe ser solvente (es_solvente == True)\n- No puede haber cédulas duplicadas en el mismo día (opcional)",
+        "operationId": "crear_pase_api_v1_pases_crear_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaseCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/buscar/{codigo}": {
+      "get": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Buscar Pase Por Codigo",
+        "description": "Busca un pase por su código corto (ej: ACC-902).\nSolo devuelve pases con estado PENDIENTE.",
+        "operationId": "buscar_pase_por_codigo_api_v1_pases_buscar__codigo__get",
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Codigo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/{pase_id}/entrada": {
+      "patch": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Registrar Entrada",
+        "description": "Cambia el estado del pase de PENDIENTE a DENTRO\ny registra la estampa de tiempo de entrada.",
+        "operationId": "registrar_entrada_api_v1_pases__pase_id__entrada_patch",
+        "parameters": [
+          {
+            "name": "pase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/{pase_id}/salida": {
+      "patch": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Registrar Salida",
+        "description": "Cambia el estado del pase de DENTRO a FINALIZADO\ny registra la hora de salida.",
+        "operationId": "registrar_salida_api_v1_pases__pase_id__salida_patch",
+        "parameters": [
+          {
+            "name": "pase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/sync-offline": {
+      "post": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Sincronizar Pases Offline",
+        "description": "Aplica las acciones acumuladas por el panel de garita en una transacción.",
+        "operationId": "sincronizar_pases_offline_api_v1_pases_sync_offline_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/OfflineSyncAction"
+                },
+                "type": "array",
+                "title": "Acciones"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfflineSyncResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/propiedad/{propiedad_id}": {
+      "get": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Obtener Pases Por Propiedad",
+        "description": "Obtiene todos los pases asociados a una propiedad.",
+        "operationId": "obtener_pases_por_propiedad_api_v1_pases_propiedad__propiedad_id__get",
+        "parameters": [
+          {
+            "name": "propiedad_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Propiedad Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaseResponse"
+                  },
+                  "title": "Response Obtener Pases Por Propiedad Api V1 Pases Propiedad  Propiedad Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/activos": {
+      "get": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Obtener Pases Activos",
+        "description": "Obtiene todos los pases con estado DENTRO (visitantes activos).",
+        "operationId": "obtener_pases_activos_api_v1_pases_activos_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PaseResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Obtener Pases Activos Api V1 Pases Activos Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/{pase_id}": {
+      "get": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Obtener Pase",
+        "description": "Obtiene un pase por su ID.",
+        "operationId": "obtener_pase_api_v1_pases__pase_id__get",
+        "parameters": [
+          {
+            "name": "pase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pases/codigo/{codigo}": {
+      "get": {
+        "tags": [
+          "pases"
+        ],
+        "summary": "Obtener Pase Por Codigo",
+        "description": "Obtiene un pase por su código (sin filtro de estado).",
+        "operationId": "obtener_pase_por_codigo_api_v1_pases_codigo__codigo__get",
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Codigo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaseResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/condominio/morosidad/cargar-csv": {
+      "post": {
+        "tags": [
+          "condominios"
+        ],
+        "summary": "Cargar Csv Morosidad",
+        "description": "Endpoint protegido para SUPER_ADMIN para cargar archivo CSV de morosidad.\n\nEl CSV debe tener el formato:\nnumero_unidad,es_solvente\nA-12,true\nB-301,false\nSOL-05,true\n\nValores aceptados para es_solvente:\n- true/false\n- 1/0\n- si/no\n- yes/no\n- y/n",
+        "operationId": "cargar_csv_morosidad_api_v1_condominio_morosidad_cargar_csv_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_cargar_csv_morosidad_api_v1_condominio_morosidad_cargar_csv_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MorosidadCSVResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/condominio/morosidad/propiedades": {
+      "get": {
+        "tags": [
+          "condominios"
+        ],
+        "summary": "Obtener Propiedades Morosidad",
+        "description": "Obtiene el estado de morosidad de todas las propiedades.\nSolo accesible para SUPER_ADMIN.",
+        "operationId": "obtener_propiedades_morosidad_api_v1_condominio_morosidad_propiedades_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/propiedades/{propiedad_id}": {
+      "get": {
+        "tags": [
+          "propiedades"
+        ],
+        "summary": "Obtener Propiedad",
+        "description": "Obtiene una propiedad por su ID con información completa.",
+        "operationId": "obtener_propiedad_api_v1_propiedades__propiedad_id__get",
+        "parameters": [
+          {
+            "name": "propiedad_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Propiedad Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/propiedades/": {
+      "get": {
+        "tags": [
+          "propiedades"
+        ],
+        "summary": "Obtener Todas Propiedades",
+        "description": "Obtiene todas las propiedades.",
+        "operationId": "obtener_todas_propiedades_api_v1_propiedades__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Login",
+        "operationId": "login_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_auth_login_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register/cohabitante": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Registrar Cohabitante",
+        "operationId": "registrar_cohabitante_auth_register_cohabitante_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitacionRegistro"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/anuncios": {
+      "get": {
+        "tags": [
+          "anuncios"
+        ],
+        "summary": "Listar Anuncios",
+        "operationId": "listar_anuncios_api_v1_anuncios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AnuncioResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Listar Anuncios Api V1 Anuncios Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "anuncios"
+        ],
+        "summary": "Crear Anuncio",
+        "operationId": "crear_anuncio_api_v1_anuncios_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnuncioCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnuncioResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/anuncios/{anuncio_id}": {
+      "delete": {
+        "tags": [
+          "anuncios"
+        ],
+        "summary": "Eliminar Anuncio",
+        "operationId": "eliminar_anuncio_api_v1_anuncios__anuncio_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "anuncio_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Anuncio Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Home",
+        "operationId": "home__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/guard": {
+      "get": {
+        "summary": "Guard Panel",
+        "description": "Panel de vigilante optimizado para tablets.",
+        "operationId": "guard_panel_guard_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner": {
+      "get": {
+        "summary": "Owner Panel",
+        "description": "Renderiza el panel con propiedades, habitantes y pases.",
+        "operationId": "owner_panel_owner_get",
+        "parameters": [
+          {
+            "name": "property_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Property Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/owner/visits": {
+      "post": {
+        "summary": "Create Owner Visit",
+        "description": "Crea un pase desde el formulario existente del panel de propietario.",
+        "operationId": "create_owner_visit_owner_visits_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_owner_visit_owner_visits_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pases/today": {
+      "get": {
+        "summary": "Api Pases Today",
+        "description": "Obtiene pases creados hoy.",
+        "operationId": "api_pases_today_api_pases_today_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pases/inside": {
+      "get": {
+        "summary": "Api Pases Inside",
+        "description": "Obtiene pases con estado DENTRO.",
+        "operationId": "api_pases_inside_api_pases_inside_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pases/search": {
+      "get": {
+        "summary": "Api Search Pase",
+        "description": "Busca un pase por código.",
+        "operationId": "api_search_pase_api_pases_search_get",
+        "parameters": [
+          {
+            "name": "codigo",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Codigo"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pases/{pase_id}/entry": {
+      "post": {
+        "summary": "Api Mark Entry",
+        "description": "Marca un pase como DENTRO.",
+        "operationId": "api_mark_entry_api_pases__pase_id__entry_post",
+        "parameters": [
+          {
+            "name": "pase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pases/{pase_id}/exit": {
+      "post": {
+        "summary": "Api Mark Exit",
+        "description": "Marca un pase como FINALIZADO.",
+        "operationId": "api_mark_exit_api_pases__pase_id__exit_post",
+        "parameters": [
+          {
+            "name": "pase_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Pase Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pases/crear": {
+      "post": {
+        "summary": "Api Crear Pase",
+        "description": "Crea un nuevo pase con validación financiera.\nVerifica que la propiedad sea solvente antes de crear el pase.",
+        "operationId": "api_crear_pase_api_pases_crear_post",
+        "parameters": [
+          {
+            "name": "propiedad_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Propiedad Id"
+            }
+          },
+          {
+            "name": "visitante_nombre",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Visitante Nombre"
+            }
+          },
+          {
+            "name": "visitante_cedula",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Visitante Cedula"
+            }
+          },
+          {
+            "name": "usuario_creador_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Usuario Creador Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnuncioCreate": {
+        "properties": {
+          "titulo": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Titulo"
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Descripcion"
+          },
+          "precio": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*(?:\\d{0,10}|(?=[\\d.]{1,13}0*$)\\d{0,10}\\.\\d{0,2}0*$)"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "titulo",
+          "descripcion"
+        ],
+        "title": "AnuncioCreate"
+      },
+      "AnuncioResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "titulo": {
+            "type": "string",
+            "title": "Titulo"
+          },
+          "descripcion": {
+            "type": "string",
+            "title": "Descripcion"
+          },
+          "precio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Precio"
+          },
+          "autor_id": {
+            "type": "integer",
+            "title": "Autor Id"
+          },
+          "fecha_creacion": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fecha Creacion"
+          },
+          "activo": {
+            "type": "boolean",
+            "title": "Activo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "titulo",
+          "descripcion",
+          "precio",
+          "autor_id",
+          "fecha_creacion",
+          "activo"
+        ],
+        "title": "AnuncioResponse"
+      },
+      "Body_cargar_csv_morosidad_api_v1_condominio_morosidad_cargar_csv_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_cargar_csv_morosidad_api_v1_condominio_morosidad_cargar_csv_post"
+      },
+      "Body_create_owner_visit_owner_visits_post": {
+        "properties": {
+          "property_id": {
+            "type": "integer",
+            "title": "Property Id"
+          },
+          "visitor_name": {
+            "type": "string",
+            "title": "Visitor Name"
+          },
+          "visitor_id": {
+            "type": "string",
+            "title": "Visitor Id"
+          },
+          "access_type": {
+            "type": "string",
+            "title": "Access Type"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "title": "Scheduled At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "property_id",
+          "visitor_name",
+          "visitor_id",
+          "access_type",
+          "scheduled_at"
+        ],
+        "title": "Body_create_owner_visit_owner_visits_post"
+      },
+      "Body_login_auth_login_post": {
+        "properties": {
+          "grant_type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "password"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grant Type"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": ""
+          },
+          "client_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Id"
+          },
+          "client_secret": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Secret"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_login_auth_login_post"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InvitacionRegistro": {
+        "properties": {
+          "token_invitacion": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Token Invitacion"
+          },
+          "nombre": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Nombre"
+          },
+          "cedula": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Cedula"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token_invitacion",
+          "nombre",
+          "cedula",
+          "email",
+          "password"
+        ],
+        "title": "InvitacionRegistro"
+      },
+      "InvitacionResponse": {
+        "properties": {
+          "token_invitacion": {
+            "type": "string",
+            "title": "Token Invitacion"
+          },
+          "expira_en": {
+            "type": "string",
+            "title": "Expira En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token_invitacion",
+          "expira_en"
+        ],
+        "title": "InvitacionResponse"
+      },
+      "MorosidadCSVResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "propiedades_actualizadas": {
+            "type": "integer",
+            "title": "Propiedades Actualizadas"
+          },
+          "errores": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errores"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message",
+          "propiedades_actualizadas"
+        ],
+        "title": "MorosidadCSVResponse"
+      },
+      "OfflineSyncAction": {
+        "properties": {
+          "pase_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Pase Id"
+          },
+          "accion": {
+            "type": "string",
+            "enum": [
+              "entrada",
+              "salida"
+            ],
+            "title": "Accion"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pase_id",
+          "accion",
+          "timestamp"
+        ],
+        "title": "OfflineSyncAction"
+      },
+      "OfflineSyncResponse": {
+        "properties": {
+          "synced_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Synced Ids"
+          }
+        },
+        "type": "object",
+        "title": "OfflineSyncResponse"
+      },
+      "PaseCreate": {
+        "properties": {
+          "propiedad_id": {
+            "type": "integer",
+            "title": "Propiedad Id",
+            "description": "ID de la propiedad"
+          },
+          "visitante_nombre": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Visitante Nombre"
+          },
+          "visitante_cedula": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Visitante Cedula"
+          },
+          "usuario_creador_id": {
+            "type": "integer",
+            "title": "Usuario Creador Id",
+            "description": "ID del usuario que crea el pase"
+          }
+        },
+        "type": "object",
+        "required": [
+          "propiedad_id",
+          "visitante_nombre",
+          "visitante_cedula",
+          "usuario_creador_id"
+        ],
+        "title": "PaseCreate"
+      },
+      "PaseResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "propiedad_id": {
+            "type": "integer",
+            "title": "Propiedad Id"
+          },
+          "visitante_nombre": {
+            "type": "string",
+            "title": "Visitante Nombre"
+          },
+          "visitante_cedula": {
+            "type": "string",
+            "title": "Visitante Cedula"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "propiedad_id",
+          "visitante_nombre",
+          "visitante_cedula",
+          "codigo",
+          "estado",
+          "created_at"
+        ],
+        "title": "PaseResponse"
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type"
+        ],
+        "title": "TokenResponse"
+      },
+      "UsuarioCreate": {
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Nombre"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "cedula": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Cedula"
+          },
+          "propiedad_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Propiedad Id"
+          },
+          "rol": {
+            "type": "string",
+            "title": "Rol",
+            "description": "Rol del usuario"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 12,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nombre",
+          "email",
+          "cedula",
+          "propiedad_id",
+          "rol",
+          "password"
+        ],
+        "title": "UsuarioCreate"
+      },
+      "UsuarioResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "cedula": {
+            "type": "string",
+            "title": "Cedula"
+          },
+          "propiedad_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Propiedad Id"
+          },
+          "rol": {
+            "type": "string",
+            "title": "Rol"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "email",
+          "cedula",
+          "propiedad_id",
+          "rol"
+        ],
+        "title": "UsuarioResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/auth/login"
+          }
+        }
+      }
+    }
+  }
+}

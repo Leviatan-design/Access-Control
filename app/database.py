@@ -11,12 +11,16 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL es obligatorio y debe apuntar a PostgreSQL")
 
-# Render may provide the legacy postgres:// scheme.
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = "postgresql://" + DATABASE_URL[len("postgres://"):]
+# Allow sqlite for testing
+if os.environ.get("TESTING") == "true" and DATABASE_URL.startswith("sqlite"):
+    pass  # Allow sqlite for testing
+else:
+    # Render may provide the legacy postgres:// scheme.
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = "postgresql://" + DATABASE_URL[len("postgres://"):]
 
-if not DATABASE_URL.startswith("postgresql"):
-    raise RuntimeError("DATABASE_URL debe usar el dialecto postgresql://")
+    if not DATABASE_URL.startswith("postgresql"):
+        raise RuntimeError("DATABASE_URL debe usar el dialecto postgresql://")
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

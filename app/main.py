@@ -7,21 +7,28 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.database import SessionLocal, get_db
 from app.controller import MorosidadController, PropiedadController, UsuarioController
-from app.models import Propiedad, Pase
+from app.models import Propiedad, Pase, UserRole, Usuario
 from app.routes.usuarios import router as usuarios_router
 from app.routes.pases import router as pases_router
 from app.routes.condominios import router as condominios_router
 from app.routes.propiedades import router as propiedades_router
 from app.routes.auth import router as auth_router
 from app.routes.anuncios import router as anuncios_router
+from app.security import get_current_user, require_role
 from app.seed import seed_database
 from app.seed import generate_code
 
@@ -29,6 +36,46 @@ BASE_DIR = Path(__file__).resolve().parent
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Access Pass - FlowLogic", version="2.0.0")
+
+# Configurar rate limiting
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware para agregar headers de seguridad HTTP."""
+    
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com;"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        return response
+
+
+# Configurar CORS (restrictivo por defecto)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080", "http://127.0.0.1:8080"],  # Solo localhost en desarrollo
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["*"],
+)
+
+# Agregar middleware de headers de seguridad
+app.add_middleware(SecurityHeadersMiddleware)
+
+# TrustedHost middleware para prevenir host header attacks
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["localhost", "127.0.0.1", "*"]  # En producción, especificar dominios reales
+)
+
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
@@ -156,12 +203,13 @@ def get_pase_or_404(db: Session, pase_id: int) -> Pase:
 @app.on_event("startup")
 def on_startup() -> None:
     # No crear tablas automáticamente - usar Alembic para migraciones
-    # Solo sembrar datos si es necesario
-    db = SessionLocal()
-    try:
-        seed_database(db)
-    finally:
-        db.close()
+    # Solo sembrar datos si es necesario y no estamos en testing
+    if os.environ.get("TESTING") != "true":
+        db = SessionLocal()
+        try:
+            seed_database(db)
+        finally:
+            db.close()
 
 
 @app.get("/health")
@@ -196,8 +244,11 @@ def home(request: Request, db: Session = Depends(get_db)) -> HTMLResponse:
 
 
 @app.get("/guard", response_class=HTMLResponse)
-def guard_panel(request: Request) -> HTMLResponse:
-    """Panel de vigilante optimizado para tablets."""
+def guard_panel(
+    request: Request,
+    current_user: Usuario = Depends(require_role([UserRole.VIGILANTE]))
+) -> HTMLResponse:
+    """Panel de vigilante optimizado para tablets. Requiere autenticación JWT y rol VIGILANTE."""
     return templates.TemplateResponse("guard.html", {"request": request})
 
 
@@ -206,21 +257,41 @@ def owner_panel(
     request: Request,
     property_id: Optional[int] = Query(default=None),
     db: Session = Depends(get_db),
+    current_user: Usuario = Depends(require_role([UserRole.ADMIN_CASA, UserRole.COHABITANTE, UserRole.SUPER_ADMIN, UserRole.ADMIN_CONDOMINIO]))
 ) -> HTMLResponse:
-    """Renderiza el panel con propiedades, habitantes y pases."""
+    """Renderiza el panel con propiedades, habitantes y pases. Requiere autenticación JWT."""
     try:
-        properties = (
-            db.query(Propiedad)
-            .options(joinedload(Propiedad.condominio), selectinload(Propiedad.usuarios))
-            .order_by(Propiedad.id)
-            .all()
-        )
+        # Filtrar propiedades según rol del usuario
+        if current_user.rol in {UserRole.SUPER_ADMIN, UserRole.ADMIN_CONDOMINIO}:
+            # Admins pueden ver todas las propiedades
+            properties = (
+                db.query(Propiedad)
+                .options(joinedload(Propiedad.condominio), selectinload(Propiedad.usuarios))
+                .order_by(Propiedad.id)
+                .all()
+            )
+        else:
+            # Usuarios normales solo ven su propiedad
+            if not current_user.propiedad_id:
+                raise HTTPException(status_code=403, detail="Usuario no asociado a ninguna propiedad")
+            properties = (
+                db.query(Propiedad)
+                .options(joinedload(Propiedad.condominio), selectinload(Propiedad.usuarios))
+                .filter(Propiedad.id == current_user.propiedad_id)
+                .all()
+            )
+        
         if not properties:
             raise HTTPException(status_code=404, detail="No hay propiedades registradas")
 
         if property_id is None:
             selected_model = properties[0]
         else:
+            # Verificar que el usuario tiene acceso a la propiedad solicitada
+            if current_user.rol not in {UserRole.SUPER_ADMIN, UserRole.ADMIN_CONDOMINIO}:
+                if property_id != current_user.propiedad_id:
+                    raise HTTPException(status_code=403, detail="No tienes acceso a esta propiedad")
+            
             selected_model = next((item for item in properties if item.id == property_id), None)
             if selected_model is None:
                 raise HTTPException(status_code=404, detail="Propiedad no encontrada")
@@ -368,8 +439,12 @@ def api_search_pase(codigo: str = Query(...), db: Session = Depends(get_db)) -> 
 
 
 @app.post("/api/pases/{pase_id}/entry")
-def api_mark_entry(pase_id: int, db: Session = Depends(get_db)) -> JSONResponse:
-    """Marca un pase como DENTRO."""
+def api_mark_entry(
+    pase_id: int, 
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(require_role([UserRole.VIGILANTE, UserRole.SUPER_ADMIN, UserRole.ADMIN_CONDOMINIO]))
+) -> JSONResponse:
+    """Marca un pase como DENTRO. Requiere autenticación JWT y rol VIGILANTE o admin."""
     pase = get_pase_or_404(db, pase_id)
     if pase.estado == "FINALIZADO":
         raise HTTPException(status_code=400, detail="El pase ya fue finalizado")
@@ -383,8 +458,12 @@ def api_mark_entry(pase_id: int, db: Session = Depends(get_db)) -> JSONResponse:
 
 
 @app.post("/api/pases/{pase_id}/exit")
-def api_mark_exit(pase_id: int, db: Session = Depends(get_db)) -> JSONResponse:
-    """Marca un pase como FINALIZADO."""
+def api_mark_exit(
+    pase_id: int, 
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(require_role([UserRole.VIGILANTE, UserRole.SUPER_ADMIN, UserRole.ADMIN_CONDOMINIO]))
+) -> JSONResponse:
+    """Marca un pase como FINALIZADO. Requiere autenticación JWT y rol VIGILANTE o admin."""
     pase = get_pase_or_404(db, pase_id)
     if pase.estado != "DENTRO":
         raise HTTPException(status_code=400, detail="El pase no está marcado como DENTRO")

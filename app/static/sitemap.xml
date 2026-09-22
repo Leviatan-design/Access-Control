@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Rutas públicas - La aplicación es principalmente privada y requiere autenticación -->
+  <url>
+    <loc>/</loc>
+    <lastmod>2024-09-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>/health</loc>
+    <lastmod>2024-09-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Nota: Las siguientes rutas requieren autenticación JWT y no están indexadas públicamente:
+       - /owner (Panel propietario - requiere rol ADMIN_CASA o COHABITANTE)
+       - /guard (Panel garita - requiere rol VIGILANTE)
+       - /api/v1/* (API endpoints - varios roles según endpoint)
+       - /auth/login (Endpoint POST de autenticación)
+  -->
+</urlset>
